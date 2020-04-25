@@ -43,7 +43,7 @@
                             throw Error("1");
                         }
 
-                        var tinyUrl = "r.htm?i="+shortId;
+                        var tinyUrl = "r?i="+shortId;
 
                         $("#result").html("");
                         $("#result").append($("<a></a>").attr("href", tinyUrl).text((new URL(tinyUrl, document.baseURI)).href));

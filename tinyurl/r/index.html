@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>autodb tinyurl example redirect</title>
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+    <script src="../host.js"></script>
+    <script>
+      var id = new URLSearchParams(window.location.search).get("i");
+      if (!id) {
+        $("body").html("404 Not found.");
+      } else {
+
+      var getApi = getApiAddress("51cf7f7aec65658e19a23e4837a792cf9227d7f69f976efc0b80bcc9521f9dda");
+
+      $.ajax({
+        url:getApi,
+        method:"POST",
+        data:JSON.stringify({id:id}),
+        dataType:"text",
+        success: function(data) {
+          try{
+            url = JSON.parse(data).result[1][0];
+            window.location.replace(url);
+          } catch (error) {
+            console.log(data);
+            console.log(error);
+            $("body").html("404 Not found.");
+          }
+        },
+        error: function(xhr) {
+          console.log(xhr.responseText);
+          $("body").html("404 Not found.");
+        }
+      })
+      }
+    </script>
+</head>
+<body>
+</body>
