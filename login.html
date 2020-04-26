@@ -7,13 +7,15 @@
   <script src="host.js"></script>
 </head>
 <body>
-  <form id="loginForm" target="_blank">
+  <h2>AutoDB Login Portal</h2>
+  <form id="loginForm" target="_blank" style="display: inline;">
     <label for="email">Email:</label><br>
     <input type="text" name="email" id="email"/><br>
     <label for="password">Password:</label><br>
     <input type="password" name="password" id="password"/><br>
-    <input type="submit" value="Submit">
+    <input type="submit" value="Login">
   </form>
+  <a href="register.html"><button>register</button></a>
   <br>
   <script>
     $("#loginForm").submit(
@@ -21,7 +23,7 @@
         event.preventDefault();
         $.ajax(
           {
-            url:"http://104.197.149.133/login",
+            url:AutoDBBase+"/login",
             method:"POST",
             data:$("#loginForm").serialize(),
             xhrFields:{
@@ -37,13 +39,23 @@
               }
             },
             error: function(xhr, status, errorThrown) {
-             $("#errorMsg").html(JSON.parse(xhr.responseText).err);
+             $("#password").val("");
+             alert(xhr.responseText);
             }
           }
         )
       }
     );
   </script>
-  <span id="errorMsg" style="font-size: 12; color: red;"></span>
+  <a id="fastRedirect">Try browse without login</a>
+  <script>
+    var urlParams = new URLSearchParams(window.location.search);
+    var redirectTo = urlParams.get("redirect");
+    if (!redirectTo){
+      $("#fastRedirect").css("visibility", "hidden")
+    } else {
+      $("#fastRedirect").attr("href", redirectTo);
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,138 @@
+<head>
+  <meta charset="UTF-8">
+  <title>autodb Market example</title>
+  <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+  <script src="../host.js"></script>
+  <script>
+    function requireLogin() {
+      var cur = window.location.href;
+      window.location.href = "../login.html?redirect="+cur;
+    }
+    $.ajax({
+      url:AutoDBBase+"/loginStatus",
+      data:{pname:"market"},
+      dataType:"text",
+      xhrFields:{
+        withCredentials:true,
+      },
+      success:function(data) {
+        console.log(data);
+        if (data!="developer") {
+          requireLogin();
+        } 
+      },
+      error: function(xhr) {
+        console.log(xhr.responseText);
+      }
+    })  
+  </script>
+
+</head>
+<body>
+  <h2>AutoDB Market Example</h2>
+  <form id = "form" style="line-height: 2em;" >
+    <label for="name">Product Name:</label>
+    <input type="text" name="name" id="name"/>
+    <br>
+    <label for="price">Product Price:</label>
+    <input type="text" name="price" id="price"/>
+    <br>
+    <label for="comments">Product Comments:</label>
+    <input type="text" name="comments" id="comments"/>
+    <br>
+    <label for="pic">Product Picture:</label>
+    <input type="file" name="pic" id="pic" accept="image/*" style="border:1px solid #333333;"/>
+    <br>
+    <input type="submit" name="submit" id="submit"/>
+  </form>
+  <script>
+    const addProApi = getApiAddress("1a2a59a3d3c7d527744e71240b4db26146021829eb33ab03389ffcfa437b1f94");
+    const addPicApi = getApiAddress("80bf7735e05bf9579bf0356e5c817bf22996d9362d7a17034ce358f3c0a682a6");
+
+    function uploadPic(proid) {
+      const reader = new FileReader();
+      reader.readAsDataURL($("#pic")[0].files[0]);
+      reader.onload = function(event) {
+        var img = new Image();//create a image
+        img.src = event.target.result;//result is base64-encoded Data URI
+        img.onload = function(el) {
+          var elem = document.createElement('canvas');//create a canvas
+
+          elem.width = 320;
+          elem.height = 180;
+
+          //draw in canvas
+          var ctx = elem.getContext('2d');
+          ctx.drawImage(el.target, 0, 0, elem.width, elem.height);
+
+          //get the base64-encoded Data URI from the resize image
+          var srcEncoded = ctx.canvas.toDataURL(el.target, 'image/png', 1);
+          var data={
+            id:proid,
+            pic:srcEncoded,
+          };
+          
+          $.ajax({
+            url:addPicApi,
+            method:"POST",
+            xhrFields:{
+              withCredentials:"true",
+            },
+            data:JSON.stringify(data),
+            dataType:"text",
+            success:function() {
+              alert("Success!");
+              window.location.reload();
+              return false;
+            },
+            error:function(xhr) {
+              console.log(xhr.responseText);
+            }
+          });
+        }
+      }
+    }
+
+    $("#form").submit(function(ev){
+      ev.preventDefault();
+      
+      var data={
+        name:$("#name").val(),
+        price:$("#price").val(),
+        comments:$("#comments").val(),
+      };
+    
+      if (!(data.name) || !(data.price)) {
+        alert("data cannot be empty");
+        return;
+      }
+
+      $.ajax({
+        url:addProApi,
+        method:"POST",
+        xhrFields:{
+          withCredentials:"true",
+        },
+        data:JSON.stringify(data),
+        dataType:"text",
+        success:function(data) {
+          try {
+            proid = JSON.parse(data).lastInsertId;
+            amt = JSON.parse(data).rowsAffected;
+            if (!amt) {
+              throw new Error(data);
+            }
+            uploadPic(proid);
+          }catch(error) {
+            console.log(error);
+          }           
+        },
+        error:function(xhr) {
+          alert(xhr.responseText);
+        }
+      });
+
+    })
+  </script>
+
+</body>
