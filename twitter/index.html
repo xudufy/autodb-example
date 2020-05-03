@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>autodb twitter example</title>
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+    <script src="../host.js"></script>
+    <script>
+    function requireLogin() {
+      var cur = window.location.href;
+      window.location.href = "../login.html?redirect="+cur;
+    }
+
+    function requireRegister() {
+      var cur = window.location.href;
+      window.location.href = "register.html";
+    }
+    
+    const getUserInfoApi = getApiAddress("dc32247c7fbf6a6056d5aa3b1468a628e5f6a66efb74b344211d64f230945b5c");
+    var currentUser = {
+      uid:-1,
+      name:"",
+    };
+
+    var fo = $.ajax({
+      url:getUserInfoApi,
+      method:"POST",
+      data:"{}",
+      xhrFields:{
+        withCredentials:true,
+      },
+      dataType:"text",
+      success: function(data) {
+        var dat = JSON.parse(data).result;
+        if (dat.length<=1) {
+          requireRegister();
+        }
+        currentUser.uid = dat[1][0];
+        currentUser.name = dat[1][1];
+      },
+      error: function(xhr) {
+        requireLogin();
+      },
+    })
+    
+    </script>
+</head>
+<body>
+  <h2>AutoDB Example: Twitter</h2>
+  <a href="#" id="toLogin"> switch login account </a>
+  <script>
+    $("#toLogin").attr("href", "../login.html?redirect="+window.location.href);
+  </script>
+
+  <form id="newtweet">
+    <textarea placeholder="Send a new tweet." name="tweet" id="ttext" rows="5"></textarea>
+    <input type="submit" id="newtsubmit" value="Send" style="font-size: large;"/>
+  </form>  
+
+  <div id="phantom" class="tweet" style="display: none;">
+    <div class="author">aaa</div>
+    <div class="createTime">1</div>
+    <div class="content"></div>
+  </div>
+
+  <style>
+    #ttext {
+      width:590px;
+      height:5em;
+      resize: none;
+      overflow: auto;
+    }
+
+    #newtsubmit {
+      float: right;
+      width: 90px;
+      height: 30px;
+      margin-top: 5px;
+      border-radius: 15px;
+      background-color: #0066cc;
+      color: #ffffff;
+    }
+
+    #newtweet, .tweet {
+      overflow-y: auto;
+      display:block;
+      border:1px solid #0066cc;
+      width: 600px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      padding: 15px;
+      box-shadow: 1px 2px 10px #3681cc;
+      border-radius: 5px;
+    }
+
+    .author {
+      display: block;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16pt;
+      font-weight: bold;
+    }
+
+    .content {
+      width:590px;
+      margin-top: 10px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14pt;
+    }
+
+    .createTime {
+      font-size: 10pt;
+      color:#333333;
+    }
+  </style>
+
+  <script>
+    var getTweetsApi = getApiAddress("675bcd12654eb4fb21d6fcefd657fec9fb217a5141c67778d929967e5ae9e378");
+    var sendTweetApi = getApiAddress("c553d0461a2482f9f2a5f73bc137318d345d4fd2d8d1a52ff0a5eaccec1432ba");
+
+    function createTweet(id, createTime, content) {
+      var card = $("#phantom").clone();
+      card.attr("id", id);
+      card.css("display", "block");
+      card.find(".author").html(currentUser.name);
+      card.find(".createTime").html(createTime);
+      card.find(".content").html(content);
+      $("body").append(card);
+    }
+
+    function GetTweets() {
+      $.ajax(
+        {
+          url:getTweetsApi,
+          method:"POST",
+          data:"{}",
+          dataType:"text",
+          xhrFields: {
+            withCredentials:true,
+          },
+          success:function(data) {
+            var dat=JSON.parse(data).result;
+            for (var i=1; i<dat.length; i++) {
+              createTweet("tweet"+i, dat[i][0], dat[i][1]);
+            }
+          },
+          error:function(xhr) {
+            alert(xhr.responseText);
+          }
+        }
+      )
+    }
+
+    $("#newtweet").submit(function(event){
+      event.preventDefault();
+      $.ajax({
+        url:sendTweetApi,
+        method:"POST",
+        data:JSON.stringify({content:$("#ttext").val()}),
+        xhrFields:{
+          withCredentials:true,
+        },
+        success:function(){
+          alert("success!");
+          window.location.reload();
+        },
+        error:function(xhr){
+          alert(xhr.responseText);
+        }
+      });
+    });
+
+    fo.done(
+      GetTweets
+    );
+  </script>
+</body>

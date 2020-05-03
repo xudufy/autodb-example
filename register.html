@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>User Register</title>
+  <meta charset="UTF-8">
+  <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+  <script src="host.js"></script>
+</head>
+<body>
+  <h2>AutoDB Register Portal</h2>
+  <form id="registerForm" target="_blank" style="display: inline;">
+    <label for="email">Email:</label><br>
+    <input type="text" name="email" id="email"/><br>
+    <label for="username">Username:</label><br>
+    <input type="text" name="username" id="username"/><br>
+    <label for="password">Password (at least 6 characters):</label><br>
+    <input type="password" name="password" id="password"/><br>
+    <label for="repass">Re-enter Password:</label><br>
+    <input type="password" name="repass" id="repass"><br>
+    <input type="submit" value="Register">
+  </form>
+  <br>
+  <script>
+    $("#registerForm").submit(
+      function(event) {
+        event.preventDefault();
+
+        if ($("#password").val()!=$("#repass").val()) {
+          alert("Two password do not match.");
+          return;
+        }
+
+        $.ajax(
+          {
+            url:AutoDBBase+"/register",
+            method:"POST",
+            data:$("#registerForm").serialize(),
+            success: function() {
+              alert("Success!");
+              window.location.href = "login.html" + window.location.search;
+            },
+            error: function(xhr, status, errorThrown) {
+             alert(xhr.responseText);
+            }
+          }
+        )
+      }
+    );
+  </script>
+</body>
+</html>

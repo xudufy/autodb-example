@@ -1,0 +1,72 @@
+<head>
+  <meta charset="UTF-8">
+  <title>autodb Twitter example</title>
+  <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.1.min.js"></script>
+  <script src="../host.js"></script>
+  <script>
+    function requireLogin() {
+      var cur = window.location.href;
+      window.location.href = "../login.html?redirect="+cur;
+    }
+    $.ajax({
+      url:AutoDBBase+"/loginStatus",
+      data:{pname:"market"},
+      dataType:"text",
+      xhrFields:{
+        withCredentials:true,
+      },
+      success:function(data) {
+        console.log(data);
+        if (data=="other") {
+          requireLogin();
+        } 
+      },
+      error: function(xhr) {
+        console.log(xhr.responseText);
+      }
+    })  
+  </script>
+
+</head>
+<body>
+  <h2>AutoDB Twitter Example: Set a display name</h2>
+  <form id = "form" style="line-height: 2em;" >
+    <label for="name">Name:</label>
+    <input type="text" name="name" id="name"/>
+    <input type="submit" name="submit" id="submit"/>
+  </form>
+  <script>
+    const setNameApi = getApiAddress("5b9f8b27429b22109224fc0b25f64323be482befdf46e98d85dc7746bb3020da");
+
+    $("#form").submit(function(ev){
+      ev.preventDefault();
+      
+      var data={
+        name:$("#name").val(),
+      };
+    
+      if (!(data.name)) {
+        alert("data cannot be empty");
+        return;
+      }
+
+      $.ajax({
+        url:setNameApi,
+        method:"POST",
+        xhrFields:{
+          withCredentials:"true",
+        },
+        data:JSON.stringify(data),
+        dataType:"text",
+        success:function(data) {
+          window.location.href = "index.html";        
+        },
+        error:function(xhr) {
+          alert(xhr.responseText);
+        }
+      });
+
+    })
+  </script>
+
+</body>
