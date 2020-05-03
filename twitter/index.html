@@ -153,6 +153,10 @@
 
     $("#newtweet").submit(function(event){
       event.preventDefault();
+      if (!$("#ttext").val()) {
+        alert("New Tweet is Empty.");
+        return;
+      }
       $.ajax({
         url:sendTweetApi,
         method:"POST",
